@@ -6,7 +6,12 @@ export default class UnsavedChangesService extends Service {
     _hasConfirmedLeave = false;
 
     get isDirty() {
-        return this._registration?.isDirty?.() ?? false;
+        try {
+            return this._registration?.isDirty?.() ?? false;
+        } catch (e) {
+            // registration's owner may have been destroyed (e.g. controller teardown)
+            return false;
+        }
     }
 
     register({isDirty, confirmLeave}) {

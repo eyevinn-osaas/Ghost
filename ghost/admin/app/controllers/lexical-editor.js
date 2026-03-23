@@ -1318,6 +1318,13 @@ export default class LexicalEditorController extends Controller {
         };
     }
 
+    willDestroy() {
+        super.willDestroy(...arguments);
+        this._unregisterUnsavedChanges?.();
+        this._unregisterUnsavedChanges = null;
+        window.onbeforeunload = null;
+    }
+
     // called when the editor route is left or the post model is swapped
     reset() {
         let post = this.post;

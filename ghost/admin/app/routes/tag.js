@@ -68,7 +68,11 @@ export default class TagRoute extends AuthenticatedRoute {
 
     async _confirmUnsavedChanges(controller) {
         if (controller.saveTask?.isRunning) {
-            await controller.saveTask.last;
+            try {
+                await controller.saveTask.last;
+            } catch (e) {
+                // ignore save errors — we'll check dirty state below
+            }
         }
 
         if (!controller.model?.hasDirtyAttributes) {

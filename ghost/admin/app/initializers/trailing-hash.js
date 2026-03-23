@@ -22,6 +22,12 @@ let trailingHash = HashLocation.extend({
                 return;
             }
 
+            // Don't intercept modified clicks (Cmd/Ctrl-click, middle-click)
+            // to preserve expected new-tab/new-window browser behavior
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+                return;
+            }
+
             let target = event.target.closest?.('a[href^="#/"]');
             if (!target) {
                 return;
