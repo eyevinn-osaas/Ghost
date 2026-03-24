@@ -32,6 +32,7 @@ export type Newsletter = {
     show_comment_cta: boolean;
     show_subscription_details: boolean;
     show_latest_posts: boolean;
+    show_share_button: boolean;
     background_color: string;
     header_background_color: string;
     button_color: string | null;
