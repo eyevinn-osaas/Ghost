@@ -1,0 +1,16 @@
+FROM ghost:6-alpine
+
+# Install bash for entrypoint
+RUN apk add --no-cache bash
+
+USER root
+
+COPY --chmod=755 osc-entrypoint.sh /usr/local/bin/osc-entrypoint.sh
+
+# Ghost stores content in /var/lib/ghost/content by default
+VOLUME ["/var/lib/ghost/content"]
+
+EXPOSE 8080
+
+ENTRYPOINT ["/usr/local/bin/osc-entrypoint.sh"]
+CMD ["node", "current/index.js"]
