@@ -16,9 +16,8 @@ fi
 # If url is still not set, default to localhost
 export url="${url:-http://localhost:${PORT}}"
 
-# Parse DATABASE_URL into Ghost database config (PostgreSQL)
+# Parse DATABASE_URL into Ghost database config
 if [ -n "$DATABASE_URL" ]; then
-    # DATABASE_URL format: postgres://user:password@host:port/dbname
     DB_PROTO="${DATABASE_URL%%://*}"
     DB_REST="${DATABASE_URL#*://}"
     DB_USERINFO="${DB_REST%%@*}"
@@ -29,16 +28,28 @@ if [ -n "$DATABASE_URL" ]; then
     DB_NAME="${DB_HOSTPATH#*/}"
     DB_HOST="${DB_HOSTPORT%%:*}"
     DB_PORT="${DB_HOSTPORT#*:}"
-    if [ "$DB_PORT" = "$DB_HOST" ]; then
-        DB_PORT="5432"
+
+    if [ "$DB_PROTO" = "postgres" ] || [ "$DB_PROTO" = "postgresql" ]; then
+        if [ "$DB_PORT" = "$DB_HOST" ]; then DB_PORT="5432"; fi
+        export database__client="pg"
+    elif [ "$DB_PROTO" = "mysql" ] || [ "$DB_PROTO" = "mariadb" ]; then
+        if [ "$DB_PORT" = "$DB_HOST" ]; then DB_PORT="3306"; fi
+        export database__client="mysql2"
     fi
 
-    export database__client="pg"
     export database__connection__host="${DB_HOST}"
     export database__connection__port="${DB_PORT}"
     export database__connection__user="${DB_USER}"
     export database__connection__password="${DB_PASS}"
     export database__connection__database="${DB_NAME}"
+elif [ -n "$MYSQL_HOST" ]; then
+    # Individual MySQL/MariaDB vars
+    export database__client="mysql2"
+    export database__connection__host="${MYSQL_HOST}"
+    export database__connection__port="${MYSQL_PORT:-3306}"
+    export database__connection__user="${MYSQL_USER:-ghost}"
+    export database__connection__password="${MYSQL_PASSWORD}"
+    export database__connection__database="${MYSQL_DB:-ghost}"
 elif [ -n "$POSTGRES_HOST" ]; then
     # Individual PostgreSQL vars
     export database__client="pg"
