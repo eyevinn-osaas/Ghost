@@ -3,6 +3,9 @@ FROM ghost:6-alpine
 # Install bash for entrypoint
 RUN apk add --no-cache bash
 
+# Install pg module for PostgreSQL support
+RUN cd /var/lib/ghost/versions/$(ls /var/lib/ghost/versions/) && npm install pg --save
+
 USER root
 
 COPY --chmod=755 osc-entrypoint.sh /usr/local/bin/osc-entrypoint.sh
