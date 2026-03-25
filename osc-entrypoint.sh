@@ -3,6 +3,7 @@ set -eo pipefail
 
 PORT=${PORT:-8080}
 GHOST_CONTENT=${GHOST_CONTENT:-/var/lib/ghost/content}
+GHOST_INSTALL=${GHOST_INSTALL:-/var/lib/ghost}
 
 # Ghost listens on its internal port; we map OSC PORT via server__port config
 export server__port="${PORT}"
@@ -43,7 +44,6 @@ if [ -n "$DATABASE_URL" ]; then
     export database__connection__password="${DB_PASS}"
     export database__connection__database="${DB_NAME}"
 elif [ -n "$MYSQL_HOST" ]; then
-    # Individual MySQL/MariaDB vars
     export database__client="mysql2"
     export database__connection__host="${MYSQL_HOST}"
     export database__connection__port="${MYSQL_PORT:-3306}"
@@ -51,7 +51,6 @@ elif [ -n "$MYSQL_HOST" ]; then
     export database__connection__password="${MYSQL_PASSWORD}"
     export database__connection__database="${MYSQL_DB:-ghost}"
 elif [ -n "$POSTGRES_HOST" ]; then
-    # Individual PostgreSQL vars
     export database__client="pg"
     export database__connection__host="${POSTGRES_HOST}"
     export database__connection__port="${POSTGRES_PORT:-5432}"
@@ -76,7 +75,19 @@ fi
 # Persistent content path
 export paths__contentPath="${GHOST_CONTENT}"
 
-# Ensure content dir exists and is writable
+# Ensure content dir and subdirs exist
 mkdir -p "${GHOST_CONTENT}"
+
+# Bootstrap content directory from Ghost's default content if themes are missing
+if [ ! -d "${GHOST_CONTENT}/themes" ]; then
+    echo "Bootstrapping Ghost content directory..."
+    GHOST_VERSION_DIR="${GHOST_INSTALL}/current/content"
+    if [ -d "$GHOST_VERSION_DIR" ]; then
+        cp -rn "$GHOST_VERSION_DIR"/* "${GHOST_CONTENT}/" 2>/dev/null || true
+    fi
+fi
+
+# Ensure required subdirectories exist even if copy was partial
+mkdir -p "${GHOST_CONTENT}/themes" "${GHOST_CONTENT}/data" "${GHOST_CONTENT}/logs" "${GHOST_CONTENT}/adapters" "${GHOST_CONTENT}/media" "${GHOST_CONTENT}/images" "${GHOST_CONTENT}/files"
 
 exec "$@"
